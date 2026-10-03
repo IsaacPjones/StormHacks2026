@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://dcglmi4va6o4u"]
+
+[ext_resource type="PackedScene" uid="uid://bv1401fvjcyb6" path="res://scenes/ant.tscn" id="1_o5qli"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_7ksya"]
+size = Vector3(10, 0.2, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_48d6w"]
+size = Vector3(10, 0.2, 10)
+
+[node name="Main" type="Node3D" unique_id=1121936957]
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1166903899]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground" unique_id=1921199095]
+mesh = SubResource("BoxMesh_7ksya")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=1644665426]
+shape = SubResource("BoxShape3D_48d6w")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=220282652]
+transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, -60, -13, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1531681881]
+transform = Transform3D(1, 0, 0, 0, 0.76604444, 0.6427876, 0, -0.6427876, 0.76604444, 0, 7, 8)
+
+[node name="Ant" parent="." unique_id=2102727504 instance=ExtResource("1_o5qli")]
