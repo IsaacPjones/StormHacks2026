@@ -1,5 +1,6 @@
 extends CharacterBody3D
 
+@export var animation_player: AnimationPlayer
 @export var move_speed: float = 1.4
 @export var turn_speed: float = 8.0
 @export var wander_limit: float = 4.0
@@ -9,8 +10,16 @@ var wait_time_left: float = 0.0
 
 var gravity: float = 9.8
 
+var was_moving: bool = false
 
 func _ready() -> void:
+	var walk_animation: Animation = animation_player.get_animation("Take 001")
+	walk_animation.loop_mode = Animation.LOOP_LINEAR
+
+	animation_player.play_section("Take 001", 12.0, 14.529)
+	animation_player.advance(0.0)
+	animation_player.pause()
+
 	choose_new_target()
 
 
@@ -62,6 +71,18 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	var horizontal_speed: float = Vector2(velocity.x, velocity.z).length()
+	var is_moving: bool = horizontal_speed > 0.05
+
+	if is_moving != was_moving or not animation_player.is_playing():
+		animation_player.stop()
+
+		if is_moving:
+			animation_player.play_section("Take 001", 12.15, 14.529)
+		else:
+			animation_player.play_section("Take 001", 4.3, 11.9701)
+
+		was_moving = is_moving
 
 func choose_new_target() -> void:
 	target_position = Vector3(
