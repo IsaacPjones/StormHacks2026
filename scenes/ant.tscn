@@ -9,20 +9,19 @@ size = Vector3(0.4749756, 0.44091797, 0.9296875)
 
 [node name="Ant" type="CharacterBody3D" unique_id=2102727504 node_paths=PackedStringArray("animation_player")]
 collision_layer = 2
-collision_mask = 1
 script = ExtResource("1_4guct")
 animation_player = NodePath("Visual/Sketchfab_Scene/AnimationPlayer")
 
 [node name="Visual" type="Node3D" parent="." unique_id=1259657642]
-transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+transform = Transform3D(-0.5, 0, -7.54979e-08, 0, 0.5, 0, 7.54979e-08, 0, -0.5, 0, 0, 0)
 
 [node name="Sketchfab_Scene" parent="Visual" unique_id=181510704 instance=ExtResource("1_4s44o")]
 transform = Transform3D(0.001, 0, 0, 0, 0.001, 0, 0, 0, 0.001, 0, 0, 0)
 
-[node name="ant" parent="Visual/Sketchfab_Scene/Sketchfab_model/34edb0c0eedb4e4e8a97d23e965116c4_fbx/Object_2/RootNode" parent_id_path=PackedInt32Array(181510704, 86333414) index="0" unique_id=1781280412]
+[node name="ant" parent="Visual/Sketchfab_Scene/Sketchfab_model/34edb0c0eedb4e4e8a97d23e965116c4_fbx/Object_2/RootNode" parent_id_path=PackedInt32Array(181510704, 130098616) index="0" unique_id=1107283591]
 transform = Transform3D(1, 0, 0, 0, 1, 2.663161e-07, 0, -2.663161e-07, 1, 0, 0, 0)
 
-[node name="Skeleton3D" parent="Visual/Sketchfab_Scene/Sketchfab_model/34edb0c0eedb4e4e8a97d23e965116c4_fbx/Object_2/RootNode/ant/ant2/Object_6" parent_id_path=PackedInt32Array(181510704, 901097607) index="0" unique_id=1243218854]
+[node name="Skeleton3D" parent="Visual/Sketchfab_Scene/Sketchfab_model/34edb0c0eedb4e4e8a97d23e965116c4_fbx/Object_2/RootNode/ant/ant2/Object_6" parent_id_path=PackedInt32Array(181510704, 1699705249) index="0" unique_id=782627129]
 bones/1/rotation = Quaternion(0.020830426, -0.6970862, 0.10440815, 0.7090387)
 bones/2/position = Vector3(-106.25182, -72.03085, 3.9999995e-06)
 bones/2/rotation = Quaternion(0.13377553, 0.9897264, -0.008756376, 0.04968949)
@@ -99,6 +98,7 @@ shape = SubResource("BoxShape3D_7ksya")
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=724871167]
 
 [node name="CarriedFood" type="Node3D" parent="." unique_id=1430062668]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 
 [node name="Sketchfab_Scene" parent="CarriedFood" unique_id=471125118 instance=ExtResource("3_acg2n")]
 transform = Transform3D(-1.608289, -0.23097213, 19.933891, -4.0502353, 19.585344, -0.09984407, -19.519453, -4.044877, -1.6217191, 0, 0.34915793, -0.07428408)

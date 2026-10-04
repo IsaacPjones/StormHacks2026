@@ -1,12 +1,18 @@
 extends CharacterBody3D
 
+const Categories = preload("res://scripts/resource_categories.gd")
+
 @export var animation_player: AnimationPlayer
-@export var move_speed: float = 1.4
+@export var move_speed: float = 2.8
+## Ground speed that matches the walking clip at its original playback rate.
+@export_range(0.01, 10.0, 0.05) var walk_animation_reference_speed: float = 1.4
 @export var turn_speed: float = 8.0
 @export var wander_limit: float = 4.0
 
 @export var food_detection_radius: float = 5.0
-@export var gather_distance: float = 0.35
+@export var gather_distance: float = 0.15
+## Reject resources on another floor even when their horizontal positions match.
+@export var arrival_height_tolerance: float = 0.6
 @export var hunger_interval: float = 120.0
 @export var eat_seconds: float = 2.0
 
@@ -82,7 +88,7 @@ func update_navigation(delta: float) -> void:
 		if not is_on_floor():
 			return
 
-		# Match path height to the ant's origin on our flat floor.
+		# Account for the navmesh's raster height above the physical ground.
 		var ground_point: Vector3 = NavigationServer3D.map_get_closest_point(
 			navigation_map,
 			global_position
@@ -150,6 +156,10 @@ func update_animation() -> void:
 		actual_velocity.z
 	).length()
 	var is_moving: bool = horizontal_speed > 0.05
+	# Real movement keeps the legs in step with individual speed variation,
+	# slowing at path endpoints and stopping when blocked. Simulation speed
+	# already scales both physics and animation through Engine.time_scale.
+	animation_player.speed_scale = horizontal_speed / walk_animation_reference_speed if is_moving else 1.0
 
 	if is_moving != was_moving or not animation_player.is_playing():
 		animation_player.stop()
@@ -167,7 +177,7 @@ func update_food_behavior(delta: float) -> bool:
 
 	# Handle food disappearing or running out.
 	if is_instance_valid(food_target):
-		if food_target.portions <= 0:
+		if food_target.portions <= 0 or food_target.resource_category != Categories.Kind.ANT_FOOD:
 			stop_seeking_food()
 	else:
 		food_target = null
@@ -175,15 +185,16 @@ func update_food_behavior(delta: float) -> bool:
 
 	if is_instance_valid(food_target):
 		# Gathering uses ground-plane distance, just like food detection.
-		var gather_offset: Vector3 = food_target.get_gather_position() - global_position
+		var gather_position: Vector3 = food_target.get_gather_position(global_position)
+		var gather_offset: Vector3 = gather_position - global_position
 		gather_offset.y = 0.0
 		var distance: float = gather_offset.length()
 
 		if is_harvesting:
 			# If pushed away, return to the gathering point.
-			if distance > gather_distance:
+			if distance > gather_distance or absf(gather_position.y - global_position.y) > arrival_height_tolerance:
 				is_harvesting = false
-				navigation_agent.target_position = food_target.get_gather_position()
+				navigation_agent.target_position = gather_position
 				return false
 
 			harvest_time_left = maxf(harvest_time_left - delta, 0.0)
@@ -203,7 +214,7 @@ func update_food_behavior(delta: float) -> bool:
 			return true
 
 		# Start gathering as soon as we are close enough.
-		if distance <= gather_distance and is_on_floor():
+		if distance <= gather_distance and absf(gather_position.y - global_position.y) <= arrival_height_tolerance and is_on_floor():
 			is_harvesting = true
 			harvest_time_left = food_target.harvest_seconds
 			wait_time_left = 0.0
@@ -211,6 +222,9 @@ func update_food_behavior(delta: float) -> bool:
 			return true
 
 		# A finished path does not always mean the food was reached.
+		# Follow the accessible side of food if its physics body has moved.
+		if navigation_agent.target_position.distance_to(gather_position) > 0.25:
+			navigation_agent.target_position = gather_position
 		if navigation_agent.is_navigation_finished():
 			print("Cannot reach GatherPoint. Distance: ", distance)
 			stop_seeking_food()
@@ -228,7 +242,7 @@ func update_food_behavior(delta: float) -> bool:
 
 		if is_instance_valid(food_target):
 			wait_time_left = 0.0
-			navigation_agent.target_position = food_target.get_gather_position()
+			navigation_agent.target_position = food_target.get_gather_position(global_position)
 
 	return false
 
@@ -243,11 +257,11 @@ func find_nearby_food() -> FoodSource:
 		if not is_instance_valid(food):
 			continue
 
-		if food.portions <= 0:
+		if food.portions <= 0 or food.resource_category != Categories.Kind.ANT_FOOD:
 			continue
 
 		var offset_to_food: Vector3 = (
-			food.get_gather_position() - global_position
+			food.get_gather_position(global_position) - global_position
 		)
 		offset_to_food.y = 0.0
 
@@ -334,7 +348,8 @@ func update_home_behavior(delta: float) -> bool:
 		stop_seeking_food()
 		return true
 
-	if horizontal_distance_to(home_target.get_arrival_position()) <= gather_distance and is_on_floor():
+	var home_position: Vector3 = home_target.get_arrival_position()
+	if horizontal_distance_to(home_position) <= gather_distance and absf(home_position.y - global_position.y) <= arrival_height_tolerance and is_on_floor():
 		if has_food:
 			home_target.deposit_portion()
 			has_food = false

@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://bl06esyci5yt"]
+
+[ext_resource type="Script" uid="uid://hpi1xn8gqaf2" path="res://scripts/detritus.gd" id="1_detritus"]
+[ext_resource type="PackedScene" uid="uid://bneqlbklpnljm" path="res://assets/plants/large_pile_of_leaves.glb" id="2_s7d5a"]
+
+[node name="Scraps" type="Node3D" unique_id=866412860]
+script = ExtResource("1_detritus")
+
+[node name="Visual" type="Node3D" parent="." unique_id=1119892946]
+transform = Transform3D(1, 0, 0, 0, 3.7, 0, 0, 0, 1, 0, -0.54064953, 0)
+
+[node name="Sketchfab_Scene" parent="Visual" unique_id=1608325031 instance=ExtResource("2_s7d5a")]
+transform = Transform3D(0.378638, 0, 0, 0, 0.108435, 0, 0, 0, 0.378638, 3.470308, -1.007928, -1.114802)
+
+[editable path="Visual/Sketchfab_Scene"]

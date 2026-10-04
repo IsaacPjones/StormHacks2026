@@ -6,20 +6,25 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_7ksya"]
 radius = 1.4
 
-[node name="Food" type="Node3D" unique_id=1873411032]
-script = ExtResource("1_af40f")
+[sub_resource type="PhysicsMaterial" id="OrangePhysics"]
+friction = 1.0
+bounce = 0.0
 
-[node name="GatherPoint" type="Marker3D" parent="." unique_id=58820636]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 1.8)
+[node name="Food" type="RigidBody3D" unique_id=1873411032]
+collision_layer = 5
+collision_mask = 5
+mass = 5.0
+physics_material_override = SubResource("OrangePhysics")
+linear_damp = 1.5
+angular_damp = 4.0
+script = ExtResource("1_af40f")
 
 [node name="Sketchfab_Scene" parent="." unique_id=1668780511 instance=ExtResource("2_370ap")]
 
 [node name="Object_2" parent="Sketchfab_Scene/Sketchfab_model/sdsdfs_unity_1_obj_cleaner_gles" parent_id_path=PackedInt32Array(1668780511, 1328249735) index="0" unique_id=1733019395]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=357249205]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1251601799]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1251601799]
 shape = SubResource("SphereShape3D_7ksya")
 
 [editable path="Sketchfab_Scene"]

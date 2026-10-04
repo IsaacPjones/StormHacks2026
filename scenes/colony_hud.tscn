@@ -2,87 +2,105 @@
 
 [ext_resource type="Script" path="res://scripts/colony_hud.gd" id="1_hud"]
 
-[sub_resource type="StyleBoxFlat" id="PanelStyle"]
-bg_color = Color(0.06, 0.09, 0.065, 0.94)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
+[sub_resource type="StyleBoxFlat" id="BarStyle"]
+bg_color = Color(0.055, 0.075, 0.06, 0.96)
 border_width_bottom = 1
-border_color = Color(0.32, 0.4, 0.29, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_left = 10
-corner_radius_bottom_right = 10
+border_color = Color(0.29, 0.36, 0.27, 1)
+
+[sub_resource type="ButtonGroup" id="SpeedGroup"]
 
 [node name="ColonyHUD" type="CanvasLayer"]
 process_mode = 3
 script = ExtResource("1_hud")
 
-[node name="Panel" type="PanelContainer" parent="."]
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 336.0
-theme_override_styles/panel = SubResource("PanelStyle")
+[node name="Bar" type="PanelContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 48.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("BarStyle")
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
+[node name="Margin" type="MarginContainer" parent="Bar"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 14
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
 
-[node name="Contents" type="VBoxContainer" parent="Panel/Margin"]
+[node name="Contents" type="HBoxContainer" parent="Bar/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10
 
-[node name="Title" type="Label" parent="Panel/Margin/Contents"]
+[node name="Pause" type="Button" parent="Bar/Margin/Contents"]
+custom_minimum_size = Vector2(64, 32)
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Ant colony"
-
-[node name="AntCount" type="Label" parent="Panel/Margin/Contents"]
-layout_mode = 2
-text = "Ants: 0"
-
-[node name="StoredFood" type="Label" parent="Panel/Margin/Contents"]
-layout_mode = 2
-text = "Stored food: 0 slices"
-
-[node name="AvailableFood" type="Label" parent="Panel/Margin/Contents"]
-layout_mode = 2
-text = "Orange: 0 portions | Carrying: 0"
-
-[node name="Warning" type="Label" parent="Panel/Margin/Contents"]
-custom_minimum_size = Vector2(280, 44)
-layout_mode = 2
-autowrap_mode = 2
-text = "Nest empty."
-
-[node name="Controls" type="HBoxContainer" parent="Panel/Margin/Contents"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Pause" type="Button" parent="Panel/Margin/Contents/Controls"]
-layout_mode = 2
-size_flags_horizontal = 3
+focus_mode = 0
+toggle_mode = true
 text = "Pause"
 
-[node name="SpeedLabel" type="Label" parent="Panel/Margin/Contents/Controls"]
+[node name="Speed0" type="Button" parent="Bar/Margin/Contents"]
 layout_mode = 2
-text = "Speed"
+focus_mode = 0
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("SpeedGroup")
+text = "1x"
 
-[node name="Speed" type="OptionButton" parent="Panel/Margin/Contents/Controls"]
+[node name="Speed1" type="Button" parent="Bar/Margin/Contents"]
 layout_mode = 2
-selected = 0
-item_count = 3
-popup/item_0/text = "1x"
-popup/item_0/id = 0
-popup/item_1/text = "2x"
-popup/item_1/id = 1
-popup/item_2/text = "4x"
-popup/item_2/id = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("SpeedGroup")
+text = "2x"
 
-[node name="AddFood" type="Button" parent="Panel/Margin/Contents"]
+[node name="Speed2" type="Button" parent="Bar/Margin/Contents"]
 layout_mode = 2
-text = "Add orange (+16 portions)"
-tooltip_text = "Refill the orange in the enclosure. Ants still need to gather and deliver it."
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("SpeedGroup")
+text = "4x"
+
+[node name="Separator" type="VSeparator" parent="Bar/Margin/Contents"]
+layout_mode = 2
+
+[node name="AntCount" type="Label" parent="Bar/Margin/Contents"]
+layout_mode = 2
+text = "Ants  0"
+
+[node name="TotalFood" type="Label" parent="Bar/Margin/Contents"]
+layout_mode = 2
+text = "Food  0"
+
+[node name="StoredFood" type="Label" parent="Bar/Margin/Contents"]
+layout_mode = 2
+text = "Stored  0"
+
+[node name="Spacer" type="Control" parent="Bar/Margin/Contents"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Warning" type="Label" parent="Bar/Margin/Contents"]
+layout_mode = 2
+text = "No food"
+
+[node name="AddFood" type="Button" parent="Bar/Margin/Contents"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Place orange"
+tooltip_text = "Choose a clear spot on the ground, then click to drop an orange."
+
+[node name="PlacementHint" type="Label" parent="."]
+visible = false
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+text = "Click clear ground to drop an orange · Green = clear · Red = blocked · Esc / right-click to cancel"
+horizontal_alignment = 1
