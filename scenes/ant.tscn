@@ -2,11 +2,14 @@
 
 [ext_resource type="Script" uid="uid://bqq38qq8i3p8m" path="res://scripts/ant.gd" id="1_4guct"]
 [ext_resource type="PackedScene" uid="uid://5ataq60upfxv" path="res://assets/bugs/ant.glb" id="1_4s44o"]
+[ext_resource type="PackedScene" uid="uid://vj3xcg74st7r" path="res://assets/food/orange_slice_free.glb" id="3_acg2n"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7ksya"]
 size = Vector3(0.4749756, 0.44091797, 0.9296875)
 
 [node name="Ant" type="CharacterBody3D" unique_id=2102727504 node_paths=PackedStringArray("animation_player")]
+collision_layer = 2
+collision_mask = 1
 script = ExtResource("1_4guct")
 animation_player = NodePath("Visual/Sketchfab_Scene/AnimationPlayer")
 
@@ -92,5 +95,12 @@ bones/40/rotation = Quaternion(0.8783318, -0.44241095, -0.09560805, -0.15383425)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1425056007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.008483887, 0.27954102, 0.03515625)
 shape = SubResource("BoxShape3D_7ksya")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=724871167]
+
+[node name="CarriedFood" type="Node3D" parent="." unique_id=1430062668]
+
+[node name="Sketchfab_Scene" parent="CarriedFood" unique_id=471125118 instance=ExtResource("3_acg2n")]
+transform = Transform3D(-1.608289, -0.23097213, 19.933891, -4.0502353, 19.585344, -0.09984407, -19.519453, -4.044877, -1.6217191, 0, 0.34915793, -0.07428408)
 
 [editable path="Visual/Sketchfab_Scene"]

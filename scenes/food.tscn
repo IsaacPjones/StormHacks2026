@@ -1,3 +1,25 @@
 [gd_scene format=3 uid="uid://bnqr4ergny2yq"]
 
+[ext_resource type="Script" uid="uid://b7ti3frybeocx" path="res://scripts/food.gd" id="1_af40f"]
+[ext_resource type="PackedScene" uid="uid://cgr7dfyuiwio5" path="res://assets/food/orange_fruit.glb" id="2_370ap"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_7ksya"]
+radius = 1.4
+
 [node name="Food" type="Node3D" unique_id=1873411032]
+script = ExtResource("1_af40f")
+
+[node name="GatherPoint" type="Marker3D" parent="." unique_id=58820636]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 1.8)
+
+[node name="Sketchfab_Scene" parent="." unique_id=1668780511 instance=ExtResource("2_370ap")]
+
+[node name="Object_2" parent="Sketchfab_Scene/Sketchfab_model/sdsdfs_unity_1_obj_cleaner_gles" parent_id_path=PackedInt32Array(1668780511, 1328249735) index="0" unique_id=1733019395]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=357249205]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1251601799]
+shape = SubResource("SphereShape3D_7ksya")
+
+[editable path="Sketchfab_Scene"]

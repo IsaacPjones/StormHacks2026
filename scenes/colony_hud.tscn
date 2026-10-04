@@ -1,0 +1,88 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/colony_hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="PanelStyle"]
+bg_color = Color(0.06, 0.09, 0.065, 0.94)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.4, 0.29, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[node name="ColonyHUD" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_hud")
+
+[node name="Panel" type="PanelContainer" parent="."]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 336.0
+theme_override_styles/panel = SubResource("PanelStyle")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Contents" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Margin/Contents"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Ant colony"
+
+[node name="AntCount" type="Label" parent="Panel/Margin/Contents"]
+layout_mode = 2
+text = "Ants: 0"
+
+[node name="StoredFood" type="Label" parent="Panel/Margin/Contents"]
+layout_mode = 2
+text = "Stored food: 0 slices"
+
+[node name="AvailableFood" type="Label" parent="Panel/Margin/Contents"]
+layout_mode = 2
+text = "Orange: 0 portions | Carrying: 0"
+
+[node name="Warning" type="Label" parent="Panel/Margin/Contents"]
+custom_minimum_size = Vector2(280, 44)
+layout_mode = 2
+autowrap_mode = 2
+text = "Nest empty."
+
+[node name="Controls" type="HBoxContainer" parent="Panel/Margin/Contents"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Pause" type="Button" parent="Panel/Margin/Contents/Controls"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pause"
+
+[node name="SpeedLabel" type="Label" parent="Panel/Margin/Contents/Controls"]
+layout_mode = 2
+text = "Speed"
+
+[node name="Speed" type="OptionButton" parent="Panel/Margin/Contents/Controls"]
+layout_mode = 2
+selected = 0
+item_count = 3
+popup/item_0/text = "1x"
+popup/item_0/id = 0
+popup/item_1/text = "2x"
+popup/item_1/id = 1
+popup/item_2/text = "4x"
+popup/item_2/id = 2
+
+[node name="AddFood" type="Button" parent="Panel/Margin/Contents"]
+layout_mode = 2
+text = "Add orange (+16 portions)"
+tooltip_text = "Refill the orange in the enclosure. Ants still need to gather and deliver it."

@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://b3vh2tghcorqn"]
+
+[ext_resource type="PackedScene" uid="uid://dbg0r6ivp6xwt" path="res://assets/plants/quiver_tree_02_4k.gltf~1/quiver_tree_02_4k.gltf" id="1_fi0kw"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_7ksya"]
+height = 5.7
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_48d6w"]
+height = 1.6
+radius = 1.5
+
+[node name="Plant" type="Node3D" unique_id=730669551]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=994203349]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=438327540]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.11881399, 2.6774757, 0)
+shape = SubResource("CylinderShape3D_7ksya")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" unique_id=275921572]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.4386005, 0)
+shape = SubResource("CylinderShape3D_48d6w")
+
+[node name="quiver_tree_02_4k" parent="StaticBody3D" unique_id=1529600474 instance=ExtResource("1_fi0kw")]
+
+[node name="quiver_tree_02" parent="StaticBody3D/quiver_tree_02_4k" index="0" unique_id=991182101]
+transform = Transform3D(4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0)
+
+[editable path="StaticBody3D/quiver_tree_02_4k"]
