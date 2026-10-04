@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://b3vh2tghcorqn"]
 
 [ext_resource type="PackedScene" uid="uid://dbg0r6ivp6xwt" path="res://assets/plants/quiver_tree_02_4k.gltf~1/quiver_tree_02_4k.gltf" id="1_fi0kw"]
+[ext_resource type="Script" path="res://scripts/plant.gd" id="2_plant"]
+[ext_resource type="Script" path="res://scripts/plant_production.gd" id="3_profile"]
+[ext_resource type="Resource" path="res://resources/plants/leaf_litter.tres" id="4_leaves"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_7ksya"]
 height = 5.7
@@ -10,6 +13,8 @@ height = 1.6
 radius = 1.5
 
 [node name="Plant" type="Node3D" unique_id=730669551]
+script = ExtResource("2_plant")
+productions = Array[ExtResource("3_profile")]([ExtResource("4_leaves")])
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=994203349]
 

@@ -4,20 +4,65 @@ const ANT_SCENE: PackedScene = preload("res://scenes/ant.tscn")
 
 @export_range(1, 20, 1) var starting_ant_count: int = 5
 @export var exploration_limit: float = 9.0
+## Optional editable CSG terrain. Its carved result supplies physical/nav geometry.
+@export_node_path("CSGShape3D") var terrain_csg_path: NodePath
+
+signal colony_ready
+
+var map_ready: bool = false
 
 var food_obstacles: Dictionary = {}
 var obstacle_check_left: float = 0.0
 
 
 func _ready() -> void:
+	prepare_navigation.call_deferred()
+
+
+func prepare_navigation() -> void:
+	var region: NavigationRegion3D = $NavigationRegion3D
+	if not terrain_csg_path.is_empty():
+		for creature in get_tree().get_nodes_in_group("ants") + get_tree().get_nodes_in_group("isopods"):
+			creature.set_physics_process(false)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		var terrain: CSGShape3D = get_node(terrain_csg_path)
+		var body := StaticBody3D.new()
+		body.name = "TerrainCollision"
+		body.add_to_group("placement_ground")
+		var shape := CollisionShape3D.new()
+		shape.shape = terrain.bake_collision_shape()
+		terrain.use_collision = false
+		body.add_child(shape)
+		region.add_child(body)
+		body.global_transform = terrain.global_transform
+		await get_tree().process_frame
+		await get_tree().physics_frame
+		NavigationServer3D.map_set_cell_size(region.get_navigation_map(), region.navigation_mesh.cell_size)
+		NavigationServer3D.map_set_cell_height(region.get_navigation_map(), region.navigation_mesh.cell_height)
+		# Keep the nest on the chamber floor rather than floating above it.
+		for home in get_tree().get_nodes_in_group("ant_homes"):
+			var query := PhysicsRayQueryParameters3D.create(home.global_position + Vector3.UP * 0.5, home.global_position + Vector3.DOWN * 5.0, 1)
+			var hit := get_world_3d().direct_space_state.intersect_ray(query)
+			if not hit.is_empty() and hit.collider.is_in_group("placement_ground"):
+				home.global_position.y = hit.position.y
 	# Bake only the static enclosure. Player-dropped food must not leave fixed
 	# holes in the navigation mesh after it moves.
-	$NavigationRegion3D.bake_navigation_mesh(false)
+	region.bake_navigation_mesh(false)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	NavigationServer3D.map_force_update(region.get_navigation_map())
 	# Allow the existing navigation region to synchronize before placing ants.
-	initialize_colony.call_deferred()
+	await initialize_colony()
+	map_ready = true
+	for creature in get_tree().get_nodes_in_group("ants") + get_tree().get_nodes_in_group("isopods"):
+		creature.set_physics_process(true)
+	colony_ready.emit()
 
 
 func _physics_process(delta: float) -> void:
+	if not map_ready:
+		return
 	obstacle_check_left -= delta
 	if obstacle_check_left > 0.0:
 		return
@@ -77,7 +122,23 @@ func initialize_colony() -> void:
 		var ant: CharacterBody3D = ANT_SCENE.instantiate()
 		ant.set("wander_limit", exploration_limit)
 		var angle: float = TAU * float(index) / float(starting_ant_count)
-		var spawn_point: Vector3 = home.global_position + Vector3(cos(angle), 0, sin(angle)) * 1.8
+		var origin: Vector3 = existing_ants[0].global_position if not existing_ants.is_empty() else home.global_position
+		var spawn_point: Vector3 = origin + Vector3(cos(angle), 0, sin(angle)) * 1.8
 		spawn_point = NavigationServer3D.map_get_closest_point(map, spawn_point)
 		add_child(ant)
 		ant.global_position = spawn_point + Vector3(0, 0.1, 0)
+
+
+func get_food_placement_surface(point: Vector3, clearance: float) -> Dictionary:
+	# Sample the whole footprint so food cannot be dropped across a tunnel mouth.
+	var center: Dictionary = {}
+	for index in range(9):
+		var offset := Vector3.ZERO if index == 0 else Vector3(cos(TAU * (index - 1) / 8.0), 0.0, sin(TAU * (index - 1) / 8.0)) * clearance
+		var sample_point := point + offset
+		var query := PhysicsRayQueryParameters3D.create(sample_point + Vector3.UP * 0.25, sample_point + Vector3.DOWN * 0.3, 1)
+		var hit := get_world_3d().direct_space_state.intersect_ray(query)
+		if hit.is_empty() or not hit.collider.is_in_group("placement_ground") or hit.normal.y < 0.97 or absf(hit.position.y - point.y) > 0.1:
+			return {}
+		if index == 0:
+			center = hit
+	return center

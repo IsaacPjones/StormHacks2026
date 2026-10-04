@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://ce0f53i24vpq7"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_choun"]
+transparency = 1
+albedo_color = Color(0.9019608, 1, 1, 0.20392157)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7ksya"]
+transparency = 1
+cull_mode = 2
+disable_ambient_light = true
+albedo_color = Color(1, 1, 1, 0)
+roughness = 0.15
+
+[node name="Sphere" type="Node3D" unique_id=1623033496]
+
+[node name="GlassSphere" type="CSGSphere3D" parent="." unique_id=1110815612]
+material_override = SubResource("StandardMaterial3D_choun")
+radius = 30.0
+radial_segments = 100
+rings = 64
+material = SubResource("StandardMaterial3D_7ksya")
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="GlassSphere" unique_id=1403478611]
+operation = 2
+radius = 28.0
+radial_segments = 100
+rings = 64

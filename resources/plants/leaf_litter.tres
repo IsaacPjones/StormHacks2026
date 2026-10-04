@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PlantProduction" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/plant_production.gd" id="1"]
+[resource]
+script = ExtResource("1")
+resource_category = 1
+resource_kind = &"leaf_scraps"
+interval_seconds = 45.0
+amount_per_drop = 3.0
+placeholder_color = Color(0.38, 0.25, 0.1, 1)

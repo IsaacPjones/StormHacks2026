@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PlantProduction" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/plant_production.gd" id="1"]
+[resource]
+script = ExtResource("1")
+resource_kind = &"nectar"
+interval_seconds = 35.0
+amount_per_drop = 2.0
+placeholder_color = Color(1, 0.72, 0.15, 1)

@@ -7,6 +7,7 @@ signal amount_changed(remaining: float)
 signal depleted
 
 @export var resource_category: Categories.Kind = Categories.Kind.DETRITUS
+@export var resource_kind: StringName = &"leaf_scraps"
 @export_range(0.0, 1000.0, 0.1) var amount: float = 8.0
 @export_range(0.1, 5.0, 0.05) var feeding_radius: float = 0.85
 
@@ -26,10 +27,16 @@ func _ready() -> void:
 		initial_visual_scale = visual.scale
 	else:
 		push_warning("Detritus visual missing at '%s'. Put the model under Visual or set visual_path." % visual_path)
-	add_to_group("detritus_sources")
+	add_to_group("resource_sources")
+	if resource_category == Categories.Kind.DETRITUS:
+		add_to_group("detritus_sources")
+	elif resource_category == Categories.Kind.ANT_FOOD:
+		add_to_group("food_sources")
 	update_visual()
 	if amount == 0.0:
 		remove_from_group("detritus_sources")
+		remove_from_group("food_sources")
+		remove_from_group("resource_sources")
 		queue_free()
 
 
@@ -61,6 +68,8 @@ func consume(requested: float) -> float:
 	amount_changed.emit(amount)
 	if amount == 0.0:
 		remove_from_group("detritus_sources")
+		remove_from_group("food_sources")
+		remove_from_group("resource_sources")
 		depleted.emit()
 		queue_free()
 	return eaten

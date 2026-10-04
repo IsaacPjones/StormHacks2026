@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://c1imtsex0b62i"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7ksya"]
+albedo_color = Color(0.26239386, 0.10160001, 2.4065375e-08, 1)
+
+[node name="FormicariumMap" type="Node3D" unique_id=718178917]
+
+[node name="Dirt" type="CSGBox3D" parent="." unique_id=281129784]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
+size = Vector3(10, 4, 6)
+material = SubResource("StandardMaterial3D_7ksya")

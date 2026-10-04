@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/plant_drop.gd" id="1"]
+
+[sub_resource type="SphereMesh" id="Mound"]
+radius = 0.3
+height = 0.6
+
+[node name="PlantDrop" type="Node3D"]
+script = ExtResource("1")
+feeding_radius = 0.5
+
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Placeholder" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0, 0.09, 0)
+scale = Vector3(1, 0.3, 1)
+mesh = SubResource("Mound")

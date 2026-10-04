@@ -1,30 +1,50 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://chftn6vuygnw1"]
 
-[ext_resource type="Script" path="res://scripts/home.gd" id="1_home"]
+[ext_resource type="Script" uid="uid://brflggseon74r" path="res://scripts/home.gd" id="1_home"]
 
 [sub_resource type="StandardMaterial3D" id="HomeMaterial"]
 albedo_color = Color(0.34, 0.2, 0.08, 1)
 
 [sub_resource type="CylinderMesh" id="HomeMesh"]
 material = SubResource("HomeMaterial")
-top_radius = 0.5
 bottom_radius = 0.65
 height = 0.12
 
-[node name="Home" type="Node3D"]
+[sub_resource type="FontFile" id="FontFile_jkv2x"]
+cache/0/variation_coordinates = {}
+cache/0/face_index = 0
+cache/0/embolden = 0.0
+cache/0/transform = Transform2D(1, 0, 0, 1, 0, 0)
+cache/0/spacing_top = 0
+cache/0/spacing_bottom = 0
+cache/0/spacing_space = 0
+cache/0/spacing_glyph = 0
+cache/0/baseline_offset = 0.0
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/32/0/ascent = 0.0
+cache/0/32/0/descent = 0.0
+cache/0/32/0/underline_position = 0.0
+cache/0/32/0/underline_thickness = 0.0
+cache/0/32/0/scale = 1.0
+
+[node name="Home" type="Node3D" unique_id=1414197430]
 script = ExtResource("1_home")
 
-[node name="Entrance" type="Marker3D" parent="."]
+[node name="Entrance" type="Marker3D" parent="." unique_id=1021886145]
 
-[node name="Base" type="MeshInstance3D" parent="."]
-position = Vector3(0, 0.02, 0)
+[node name="Base" type="MeshInstance3D" parent="." unique_id=920522220]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
 mesh = SubResource("HomeMesh")
 
-[node name="FoodPile" type="Node3D" parent="."]
-position = Vector3(0, 0.08, -0.2)
+[node name="FoodPile" type="Node3D" parent="." unique_id=1463488978]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, -0.2)
 
-[node name="FoodLabel" type="Label3D" parent="."]
-position = Vector3(0, 0.9, 0)
+[node name="FoodLabel" type="Label3D" parent="." unique_id=1603703497]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 billboard = 1
-font_size = 32
-text = "Home | Orange slices: 0"
+text = "Ant Storage | Food Chunks: 0"
+font = SubResource("FontFile_jkv2x")

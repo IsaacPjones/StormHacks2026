@@ -8,6 +8,7 @@ signal portions_changed(portions_left: int)
 signal depleted(scraps: Node3D)
 
 @export var resource_category: Categories.Kind = Categories.Kind.ANT_FOOD
+@export var resource_kind: StringName = &"fruit"
 @export var portions: int = 8
 @export var harvest_seconds: float = 10.0
 @export var gather_radius: float = 1.9
@@ -18,6 +19,7 @@ var has_depleted: bool = false
 
 func _ready() -> void:
 	add_to_group("food_sources")
+	add_to_group("resource_sources")
 	if portions <= 0:
 		leave_scraps.call_deferred()
 
@@ -64,6 +66,7 @@ func leave_scraps() -> void:
 	has_depleted = true
 	portions = 0
 	remove_from_group("food_sources")
+	remove_from_group("resource_sources")
 	# Disable the orange immediately; no invisible physics body may block the
 	# pile. The colony's existing obstacle check removes its baked nav hole.
 	collision_layer = 0

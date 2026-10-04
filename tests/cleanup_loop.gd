@@ -25,6 +25,10 @@ func run_check() -> void:
 	seed(12)
 	var world: Node3D = load("res://scenes/main.tscn").instantiate()
 	root.add_child(world)
+	# Isolate the existing orange cleanup regression from renewable plant food.
+	for plant in get_nodes_in_group("productive_plants"):
+		plant.set("production_enabled", false)
+	await world.colony_ready
 	for frame in range(20):
 		await physics_frame
 	var ants: Array[Node] = get_nodes_in_group("ants")
@@ -44,7 +48,7 @@ func run_check() -> void:
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
-	click.position = camera.unproject_position(Vector3(4, 0, 1))
+	click.position = camera.unproject_position(Vector3(4, 0, 5))
 	placement.call("_unhandled_input", click)
 	for frame in range(3):
 		await physics_frame

@@ -11,6 +11,8 @@ const Detritus = preload("res://scripts/detritus.gd")
 @export var turn_speed: float = 7.0
 @export var wander_limit: float = 9.0
 @export var detection_range: float = 5.0
+## Empty accepts all detritus; useful when introducing more specialised species.
+@export var accepted_resource_kinds: Array[StringName] = []
 @export var feeding_distance: float = 0.2
 @export var arrival_height_tolerance: float = 0.6
 @export_range(0.01, 100.0, 0.05) var eating_rate: float = 0.8
@@ -26,8 +28,9 @@ var gravity: float = 9.8
 
 
 func _ready() -> void:
+	floor_snap_length = 0.6
 	add_to_group("isopods")
-	navigation_agent.path_desired_distance = 0.12
+	navigation_agent.path_desired_distance = 0.3
 	navigation_agent.target_desired_distance = 0.1
 	navigation_agent.avoidance_enabled = false
 	scan_time_left = randf_range(0.0, 0.5)
@@ -58,7 +61,7 @@ func _physics_process(delta: float) -> void:
 		choose_wander_target()
 
 	if is_instance_valid(resource_target):
-		if resource_target.is_queued_for_deletion() or resource_target.amount <= 0.0 or resource_target.resource_category != Categories.Kind.DETRITUS:
+		if resource_target.is_queued_for_deletion() or resource_target.amount <= 0.0 or not accepts_detritus(resource_target):
 			resume_exploring()
 	elif resource_target != null or is_eating:
 		resume_exploring()
@@ -111,6 +114,10 @@ func update_animation() -> void:
 		animation_player.pause()
 
 
+func accepts_detritus(resource: Node3D) -> bool:
+	return resource.get("resource_category") == Categories.Kind.DETRITUS and (accepted_resource_kinds.is_empty() or resource.get("resource_kind") in accepted_resource_kinds)
+
+
 func find_nearby_detritus() -> Detritus:
 	var nearest: Detritus = null
 	var nearest_distance: float = detection_range
@@ -119,7 +126,7 @@ func find_nearby_detritus() -> Detritus:
 		var resource := node as Detritus
 		if not is_instance_valid(resource) or resource.is_queued_for_deletion():
 			continue
-		if resource.amount <= 0.0 or resource.resource_category != Categories.Kind.DETRITUS:
+		if resource.amount <= 0.0 or not accepts_detritus(resource):
 			continue
 		var distance: float = horizontal_distance_to(resource.global_position)
 		if distance >= nearest_distance:

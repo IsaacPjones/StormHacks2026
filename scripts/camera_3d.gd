@@ -1,9 +1,9 @@
 extends Node3D
 
-@export var rotation_speed: float = 0.005
-@export var pan_speed: float = 0.0015
+@export var rotation_speed: float = 0.01
+@export var pan_speed: float = 0.005
 @export var min_distance: float = 2.0
-@export var max_distance: float = 25.0
+@export var max_distance: float = 40.0
 
 @onready var camera: Camera3D = $Camera3D
 

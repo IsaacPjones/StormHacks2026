@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://cxofbfk5uex0g"]
+
+[ext_resource type="PackedScene" path="res://scenes/nectar_plant.tscn" id="1"]
+[ext_resource type="Script" uid="uid://bsd822sa2bsev" path="res://scripts/plant_production.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/plants/sap.tres" id="3"]
+[ext_resource type="PackedScene" uid="uid://bk0k2gd6b3lmb" path="res://assets/plants/celandine_01_4k.gltf~1/celandine_01_4k.gltf" id="4_0xp28"]
+
+[node name="SapPlant" unique_id=1240708229 instance=ExtResource("1")]
+productions = Array[ExtResource("2")]([ExtResource("3")])
+
+[node name="Stem" parent="Visual" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+visible = false
+
+[node name="Flower" parent="Visual" index="1"]
+transform = Transform3D(1, 0, 0, 0, 0.4, 0, 0, 0, 1, 0, 0.95, 0)
+visible = false
+
+[node name="celandine_01_4k" parent="." index="1" unique_id=1679308484 instance=ExtResource("4_0xp28")]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0)
+
+[node name="celandine_01_a_LOD0" parent="celandine_01_4k" index="0" unique_id=796414374]
+visible = false
+
+[node name="celandine_01_b_LOD0" parent="celandine_01_4k" index="1" unique_id=1459545395]
+visible = false
+
+[node name="celandine_01_c_LOD0" parent="celandine_01_4k" index="2" unique_id=2120029496]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="celandine_01_d_LOD0" parent="celandine_01_4k" index="3" unique_id=1063234456]
+visible = false
+
+[node name="celandine_01_e_LOD0" parent="celandine_01_4k" index="4" unique_id=1776925928]
+visible = false
+
+[editable path="celandine_01_4k"]

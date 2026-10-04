@@ -1,0 +1,39 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/plant.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/plant_production.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/plants/nectar.tres" id="3"]
+
+[sub_resource type="StandardMaterial3D" id="Green"]
+albedo_color = Color(0.18, 0.42, 0.12, 1)
+
+[sub_resource type="StandardMaterial3D" id="Flower"]
+albedo_color = Color(0.9, 0.45, 0.6, 1)
+
+[sub_resource type="CylinderMesh" id="Stem"]
+material = SubResource("Green")
+top_radius = 0.06
+bottom_radius = 0.09
+height = 0.9
+
+[sub_resource type="SphereMesh" id="Bloom"]
+material = SubResource("Flower")
+radius = 0.35
+height = 0.7
+
+[node name="NectarPlant" type="Node3D"]
+script = ExtResource("1")
+productions = Array[ExtResource("2")]([ExtResource("3")])
+drop_radius_min = 0.9
+drop_radius_max = 1.8
+
+[node name="Visual" type="Node3D" parent="."]
+
+[node name="Stem" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0, 0.45, 0)
+mesh = SubResource("Stem")
+
+[node name="Flower" type="MeshInstance3D" parent="Visual"]
+position = Vector3(0, 0.95, 0)
+scale = Vector3(1, 0.4, 1)
+mesh = SubResource("Bloom")

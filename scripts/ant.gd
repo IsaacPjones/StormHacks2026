@@ -10,7 +10,9 @@ const Categories = preload("res://scripts/resource_categories.gd")
 @export var wander_limit: float = 4.0
 
 @export var food_detection_radius: float = 5.0
-@export var gather_distance: float = 0.15
+## Empty accepts all ant food; specify kinds to restrict this species' diet.
+@export var accepted_resource_kinds: Array[StringName] = []
+@export var gather_distance: float = 0.5
 ## Reject resources on another floor even when their horizontal positions match.
 @export var arrival_height_tolerance: float = 0.6
 @export var hunger_interval: float = 120.0
@@ -18,7 +20,7 @@ const Categories = preload("res://scripts/resource_categories.gd")
 
 @onready var carried_food: Node3D = $CarriedFood
 
-var food_target: FoodSource
+var food_target: Node3D
 var is_harvesting: bool = false
 var harvest_time_left: float = 0.0
 var has_food: bool = false
@@ -39,19 +41,20 @@ var navigation_ready: bool = false
 
 
 func _ready() -> void:
+	floor_snap_length = 0.6
 	add_to_group("ants")
 	carried_food.hide()
 	# Stagger activity without changing the configured recurring hunger interval.
 	hunger_time_left = hunger_interval * randf_range(0.7, 1.3)
 	food_scan_time_left = randf_range(0.0, 0.5)
-	wait_time_left = randf_range(0.2, 1.5)
-	move_speed *= randf_range(0.9, 1.1)
+	wait_time_left = randf_range(0.2, 0.9)
+	move_speed *= randf_range(0.8, 1.2)
 	var animation: Animation = animation_player.get_animation("Take 001")
 	animation.loop_mode = Animation.LOOP_LINEAR
 	animation_player.play_section("Take 001", 4.3, 11.9701)
 
 	# How close we must get to each path point and destination.
-	navigation_agent.path_desired_distance = 0.15
+	navigation_agent.path_desired_distance = 0.35
 	navigation_agent.target_desired_distance = 0.15
 	navigation_agent.avoidance_enabled = false
 
@@ -177,7 +180,7 @@ func update_food_behavior(delta: float) -> bool:
 
 	# Handle food disappearing or running out.
 	if is_instance_valid(food_target):
-		if food_target.portions <= 0 or food_target.resource_category != Categories.Kind.ANT_FOOD:
+		if food_target.is_queued_for_deletion() or food_target.portions <= 0 or not accepts_food(food_target):
 			stop_seeking_food()
 	else:
 		food_target = null
@@ -186,6 +189,9 @@ func update_food_behavior(delta: float) -> bool:
 	if is_instance_valid(food_target):
 		# Gathering uses ground-plane distance, just like food detection.
 		var gather_position: Vector3 = food_target.get_gather_position(global_position)
+		if not gather_position.is_finite():
+			stop_seeking_food()
+			return false
 		var gather_offset: Vector3 = gather_position - global_position
 		gather_offset.y = 0.0
 		var distance: float = gather_offset.length()
@@ -205,7 +211,7 @@ func update_food_behavior(delta: float) -> bool:
 				if food_target.take_portion():
 					has_food = true
 					carried_food.show()
-					print("Ant collected an orange slice!")
+					print("Ant collected a food portion!")
 
 				stop_seeking_food()
 				if has_food:
@@ -247,22 +253,28 @@ func update_food_behavior(delta: float) -> bool:
 	return false
 
 
-func find_nearby_food() -> FoodSource:
-	var nearest_food: FoodSource = null
+func accepts_food(food: Node3D) -> bool:
+	return food.get("resource_category") == Categories.Kind.ANT_FOOD and (accepted_resource_kinds.is_empty() or food.get("resource_kind") in accepted_resource_kinds)
+
+
+func find_nearby_food() -> Node3D:
+	var nearest_food: Node3D = null
 	var nearest_distance: float = food_detection_radius
 
 	for node in get_tree().get_nodes_in_group("food_sources"):
-		var food := node as FoodSource
+		var food := node as Node3D
 
 		if not is_instance_valid(food):
 			continue
 
-		if food.portions <= 0 or food.resource_category != Categories.Kind.ANT_FOOD:
+		if food.is_queued_for_deletion() or food.portions <= 0 or not accepts_food(food):
 			continue
 
 		var offset_to_food: Vector3 = (
 			food.get_gather_position(global_position) - global_position
 		)
+		if not offset_to_food.is_finite():
+			continue
 		offset_to_food.y = 0.0
 
 		var distance: float = offset_to_food.length()
@@ -305,7 +317,10 @@ func begin_home_trip(require_food: bool) -> void:
 			continue
 		if require_food and home.stored_portions <= 0:
 			continue
-		var distance := horizontal_distance_to(home.get_arrival_position())
+		var path := NavigationServer3D.map_get_path(navigation_agent.get_navigation_map(), global_position, home.get_arrival_position(), true, navigation_agent.navigation_layers)
+		if path.is_empty() or path[path.size() - 1].distance_to(home.get_arrival_position()) > arrival_height_tolerance:
+			continue
+		var distance := global_position.distance_to(home.get_arrival_position())
 		if distance < nearest_distance:
 			nearest_distance = distance
 			home_target = home
@@ -328,16 +343,21 @@ func update_home_behavior(delta: float) -> bool:
 		if eat_time_left == 0.0:
 			is_eating = false
 			hunger_time_left = hunger_interval
-			print("Ant finished eating an orange slice.")
+			print("Ant finished eating a stored food portion.")
 			stop_seeking_food()
 		return true
 
 	if not is_instance_valid(home_target):
 		home_target = null
+		home_retry_time_left = maxf(home_retry_time_left - delta, 0.0)
+		if home_retry_time_left > 0.0:
+			return false
 		if has_food:
 			begin_home_trip(false)
 		elif hunger_time_left == 0.0 and not is_harvesting:
 			begin_home_trip(true)
+		if not is_instance_valid(home_target):
+			home_retry_time_left = 1.0
 
 	if not is_instance_valid(home_target):
 		return false
@@ -357,7 +377,7 @@ func update_home_behavior(delta: float) -> bool:
 		elif home_target.take_portion():
 			is_eating = true
 			eat_time_left = eat_seconds
-			print("Ant started eating a stored orange slice.")
+			print("Ant started eating a stored food portion.")
 		home_target = null
 		stop_seeking_food()
 		return true

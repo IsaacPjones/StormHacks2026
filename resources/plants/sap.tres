@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PlantProduction" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/plant_production.gd" id="1"]
+[resource]
+script = ExtResource("1")
+resource_kind = &"sap"
+interval_seconds = 55.0
+amount_per_drop = 2.0
+harvest_seconds = 4.0
+placeholder_color = Color(0.65, 0.28, 0.07, 1)

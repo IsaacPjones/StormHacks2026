@@ -23,7 +23,7 @@ func deposit_portion() -> void:
 	stored_portions += 1
 	update_food_display()
 	food_changed.emit(stored_portions)
-	print("Orange slice deposited. Home portions: ", stored_portions)
+	print("Food deposited. Home portions: ", stored_portions)
 
 
 func take_portion() -> bool:
@@ -37,7 +37,7 @@ func take_portion() -> bool:
 
 
 func update_food_display() -> void:
-	food_label.text = "Home | Orange slices: %d" % stored_portions
+	food_label.text = "Home | Food portions: %d" % stored_portions
 	for child in food_pile.get_children():
 		food_pile.remove_child(child)
 		child.queue_free()
