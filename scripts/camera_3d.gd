@@ -2,6 +2,9 @@ extends Node3D
 
 signal selection_changed(bug: Node3D)
 
+@export var trackpad_orbit_speed: float = 0.025
+@export var trackpad_pan_speed: float = 0.008
+
 @export var rotation_speed: float = 0.004
 @export var pan_speed: float = 0.0012
 @export var min_distance: float = 3.0
@@ -76,6 +79,46 @@ func _input(event: InputEvent) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if get_parent().get_node("ColonyHUD").pause_overlay != null and get_parent().get_node("ColonyHUD").pause_overlay.visible:
+		return
+	if event is InputEventMagnifyGesture:
+		distance = clampf(
+			distance / maxf(event.factor, 0.01),
+			min_distance,
+			max_distance
+		)
+		get_viewport().set_input_as_handled()
+		return
+
+	# Two-finger swipe to orbit, or Shift + swipe to pan.
+	if event is InputEventPanGesture:
+		if event.shift_pressed:
+			stop_following()
+
+			var right := global_basis.x
+			var back := global_basis.z
+			right.y = 0.0
+			back.y = 0.0
+
+			global_position += (
+				-right.normalized() * event.delta.x
+				-back.normalized() * event.delta.y
+			) * trackpad_pan_speed * distance
+
+			global_position.x = clampf(
+				global_position.x, -pan_limit, pan_limit
+			)
+			global_position.z = clampf(
+				global_position.z, -pan_limit, pan_limit
+			)
+		else:
+			rotation.y -= event.delta.x * trackpad_orbit_speed
+			rotation.x = clampf(
+				rotation.x - event.delta.y * trackpad_orbit_speed,
+				deg_to_rad(-82),
+				deg_to_rad(-10)
+			)
+
+		get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_F and is_instance_valid(selected_bug):
