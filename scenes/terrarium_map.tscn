@@ -8,8 +8,10 @@
 [ext_resource type="Texture2D" uid="uid://xjrh4cyejv77" path="res://assets/objects/bark_debris_01_4k.gltf/textures/bark_debris_01_diff_4k.jpg" id="4_0tjg1"]
 [ext_resource type="Texture2D" uid="uid://dhq3car1ykguo" path="res://assets/objects/bark_debris_01_4k.gltf/textures/bark_debris_01_arm_4k.jpg" id="5_5n233"]
 [ext_resource type="Texture2D" uid="uid://jeolb4nhp5v5" path="res://assets/objects/bark_debris_01_4k.gltf/textures/bark_debris_01_nor_gl_4k.jpg" id="6_ojks6"]
+[ext_resource type="Material" path="res://resources/soil_greenery.tres" id="7_greenery"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d47wm"]
+next_pass = ExtResource("7_greenery")
 albedo_texture = ExtResource("1_yg817")
 metallic_specular = 0.0
 normal_enabled = true
