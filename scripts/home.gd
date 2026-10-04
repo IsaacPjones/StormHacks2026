@@ -4,6 +4,10 @@ extends Node3D
 signal food_changed(portions: int)
 
 @export var stored_portions: int = 0
+@export_range(1.0, 3600.0, 1.0) var worker_interval_seconds: float = 180.0
+@export_range(1, 50, 1) var worker_food_cost: int = 3
+@export_range(0, 50, 1) var worker_food_reserve: int = 3
+var worker_progress: float = 0.0
 
 @onready var entrance: Marker3D = $Entrance
 @onready var food_label: Label3D = $FoodLabel

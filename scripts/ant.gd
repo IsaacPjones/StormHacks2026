@@ -1,12 +1,24 @@
 extends CharacterBody3D
 
 const Categories = preload("res://scripts/resource_categories.gd")
+const SurfaceMovement = preload("res://scripts/ant_surface_movement.gd")
 
 @export var animation_player: AnimationPlayer
+@export var age_seconds: float = 300.0
+## Simulation seconds without a meal before dying. Zero disables starvation.
+@export_range(0.0, 3600.0, 10.0) var starvation_seconds: float = 600.0
+@export var time_without_food: float = 0.0
 @export var move_speed: float = 2.8
 ## Ground speed that matches the walking clip at its original playback rate.
 @export_range(0.01, 10.0, 0.05) var walk_animation_reference_speed: float = 1.4
 @export var turn_speed: float = 8.0
+## Curved tunnel contacts can be steeper than the navmesh's centreline floor.
+@export_range(30.0, 65.0, 1.0) var contact_slope_degrees: float = 55.0
+@export var wall_crawling_enabled: bool = true
+@export var wall_crawl_speed: float = 1.6
+@export var wall_probe_distance: float = 0.85
+@export var wall_adhesion_speed: float = 0.6
+@export var wall_visit_seconds: float = 8.0
 @export var wander_limit: float = 4.0
 
 @export var food_detection_radius: float = 5.0
@@ -38,10 +50,12 @@ var wait_time_left: float = 0.0
 var gravity: float = 9.8
 var was_moving: bool = false
 var navigation_ready: bool = false
+var surface_crawler := SurfaceMovement.new()
 
 
 func _ready() -> void:
 	floor_snap_length = 0.6
+	floor_max_angle = deg_to_rad(contact_slope_degrees)
 	add_to_group("ants")
 	carried_food.hide()
 	# Stagger activity without changing the configured recurring hunger interval.
@@ -60,6 +74,15 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	time_without_food += delta
+	if starvation_seconds > 0.0 and time_without_food >= starvation_seconds:
+		remove_from_group("ants")
+		var hud := get_parent().get_node_or_null("ColonyHUD")
+		if hud != null:
+			hud.show_notice("An ant died from lack of food")
+		queue_free()
+		return
+	age_seconds += delta
 	# Apply gravity so the ant stays on the floor.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -75,6 +98,7 @@ func _physics_process(delta: float) -> void:
 	elif not update_food_behavior(delta):
 		update_navigation(delta)
 
+	surface_crawler.before_move(self, delta)
 	move_and_slide()
 	update_animation()
 
@@ -139,9 +163,12 @@ func update_navigation(delta: float) -> void:
 func choose_new_target() -> void:
 	var random_position := Vector3(
 		randf_range(-wander_limit, wander_limit),
-		global_position.y,
+		0.0 if randf() < 0.65 else global_position.y,
 		randf_range(-wander_limit, wander_limit)
 	)
+	var world := get_tree().get_first_node_in_group("terrariums")
+	if world != null:
+		random_position = world.wander_point(global_position.y)
 
 	# Snap the random destination onto the navigation mesh.
 	target_position = NavigationServer3D.map_get_closest_point(
@@ -154,7 +181,7 @@ func choose_new_target() -> void:
 
 func update_animation() -> void:
 	var actual_velocity: Vector3 = get_real_velocity()
-	var horizontal_speed: float = Vector2(
+	var horizontal_speed: float = actual_velocity.length() if surface_crawler.active else Vector2(
 		actual_velocity.x,
 		actual_velocity.z
 	).length()
@@ -375,6 +402,7 @@ func update_home_behavior(delta: float) -> bool:
 			has_food = false
 			carried_food.hide()
 		elif home_target.take_portion():
+			time_without_food = 0.0
 			is_eating = true
 			eat_time_left = eat_seconds
 			print("Ant started eating a stored food portion.")
@@ -393,3 +421,13 @@ func update_home_behavior(delta: float) -> bool:
 
 	update_navigation(delta)
 	return true
+
+
+func get_activity_label() -> String:
+	if is_eating:
+		return "Eating"
+	if has_food or is_instance_valid(home_target):
+		return "Returning Home (crawling)" if surface_crawler.active else "Returning Home"
+	if is_harvesting or is_instance_valid(food_target):
+		return "Gathering"
+	return "Crawling" if surface_crawler.active else "Exploring"

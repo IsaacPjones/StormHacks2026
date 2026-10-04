@@ -3,7 +3,8 @@ extends Node3D
 const ANT_SCENE: PackedScene = preload("res://scenes/ant.tscn")
 
 @export_range(1, 20, 1) var starting_ant_count: int = 5
-@export var exploration_limit: float = 9.0
+@export var exploration_limit: float = 24.0
+@export var enclosure_radius: float = 28.0
 ## Optional editable CSG terrain. Its carved result supplies physical/nav geometry.
 @export_node_path("CSGShape3D") var terrain_csg_path: NodePath
 
@@ -16,6 +17,13 @@ var obstacle_check_left: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group("terrariums")
+	var glass := get_node_or_null("NavigationRegion3D/Sphere")
+	if glass != null:
+		glass.add_to_group("glass_surface")
+	var surface := get_node_or_null("Surface/Terrain3D")
+	if surface != null:
+		surface.add_to_group("placement_ground")
 	prepare_navigation.call_deferred()
 
 
@@ -48,15 +56,34 @@ func prepare_navigation() -> void:
 				home.global_position.y = hit.position.y
 	# Bake only the static enclosure. Player-dropped food must not leave fixed
 	# holes in the navigation mesh after it moves.
-	region.bake_navigation_mesh(false)
+	bake_navigation()
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	NavigationServer3D.map_force_update(region.get_navigation_map())
 	# Allow the existing navigation region to synchronize before placing ants.
 	await initialize_colony()
+	var saves := get_node_or_null("/root/TerrariumSave")
+	if saves != null and not saves.pending_load.is_empty():
+		saves.apply_state(self, saves.pending_load)
+		saves.pending_load = {}
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		food_obstacles.clear()
+		for food in get_tree().get_nodes_in_group("food_sources"):
+			if food is RigidBody3D and food.sleeping:
+				food_obstacles[food.get_instance_id()] = food.global_position
+		update_food_navigation()
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		NavigationServer3D.map_force_update(region.get_navigation_map())
 	map_ready = true
 	for creature in get_tree().get_nodes_in_group("ants") + get_tree().get_nodes_in_group("isopods"):
 		creature.set_physics_process(true)
+	if saves != null and saves.pending_new:
+		saves.pending_new = false
+		if not saves.save_world(self):
+			$ColonyHUD.show_notice(saves.last_error)
+	$ColonyHUD.refresh_display()
 	colony_ready.emit()
 
 
@@ -100,7 +127,7 @@ func update_food_navigation() -> void:
 		region.add_child(proxy)
 		proxy.global_transform = collider.global_transform
 		proxies.append(proxy)
-	region.bake_navigation_mesh(false)
+	bake_navigation()
 	for proxy in proxies:
 		region.remove_child(proxy)
 		proxy.queue_free()
@@ -117,6 +144,8 @@ func initialize_colony() -> void:
 	var existing_ants: Array[Node] = get_tree().get_nodes_in_group("ants")
 	for ant in existing_ants:
 		ant.set("wander_limit", exploration_limit)
+	for bug in get_tree().get_nodes_in_group("isopods"):
+		bug.set("wander_limit", exploration_limit)
 
 	for index in range(existing_ants.size(), starting_ant_count):
 		var ant: CharacterBody3D = ANT_SCENE.instantiate()
@@ -142,3 +171,31 @@ func get_food_placement_surface(point: Vector3, clearance: float) -> Dictionary:
 		if index == 0:
 			center = hit
 	return center
+
+
+func bake_navigation() -> void:
+	var region: NavigationRegion3D = $NavigationRegion3D
+	var source := NavigationMeshSourceGeometryData3D.new()
+	NavigationServer3D.parse_source_geometry_data(region.navigation_mesh, source, region)
+	# Reuse the installed Terrain3D's own nav source generation. Never change its
+	# painted terrain, textures, holes, or transform to accommodate placement.
+	var surface := get_node_or_null("Surface/Terrain3D")
+	if surface != null and surface.has_method("generate_nav_mesh_source_geometry"):
+		var faces: PackedVector3Array = surface.generate_nav_mesh_source_geometry(AABB(Vector3(-29, -20, -29), Vector3(58, 42, 58)))
+		if not faces.is_empty():
+			var bounded := PackedVector3Array()
+			for index in range(0, faces.size(), 3):
+				if Vector2(faces[index].x, faces[index].z).length() <= enclosure_radius and Vector2(faces[index + 1].x, faces[index + 1].z).length() <= enclosure_radius and Vector2(faces[index + 2].x, faces[index + 2].z).length() <= enclosure_radius:
+					bounded.append(faces[index])
+					bounded.append(faces[index + 1])
+					bounded.append(faces[index + 2])
+			if not bounded.is_empty():
+				source.add_faces(bounded, Transform3D.IDENTITY)
+	NavigationServer3D.bake_from_source_geometry_data(region.navigation_mesh, source)
+	region.navigation_mesh = region.navigation_mesh
+
+
+func wander_point(height: float) -> Vector3:
+	var angle := randf() * TAU
+	var radius := sqrt(randf()) * minf(exploration_limit, enclosure_radius - 1.0)
+	return Vector3(cos(angle) * radius, 0.0 if randf() < 0.65 else height, sin(angle) * radius)

@@ -4,11 +4,19 @@ const Categories = preload("res://scripts/resource_categories.gd")
 const Detritus = preload("res://scripts/detritus.gd")
 
 @export var animation_player: AnimationPlayer
+@export var age_seconds: float = 300.0
+## Simulation seconds without eating detritus. Zero disables starvation.
+@export_range(0.0, 3600.0, 10.0) var starvation_seconds: float = 600.0
+@export var time_without_food: float = 0.0
+@export_range(0.0, 60.0, 0.1) var feeding_reserve: float = 0.0
+@export_range(0.0, 1.0, 0.001) var feeding_reserve_decay: float = 0.003
+@export var breeding_cooldown: float = 0.0
 @export var walk_animation: StringName = &"Walk"
 ## Ground speed that matches the walking clip at its original playback rate.
 @export_range(0.01, 10.0, 0.05) var walk_animation_reference_speed: float = 1.1
 @export var move_speed: float = 1.1
 @export var turn_speed: float = 7.0
+@export_range(30.0, 65.0, 1.0) var contact_slope_degrees: float = 55.0
 @export var wander_limit: float = 9.0
 @export var detection_range: float = 5.0
 ## Empty accepts all detritus; useful when introducing more specialised species.
@@ -29,6 +37,7 @@ var gravity: float = 9.8
 
 func _ready() -> void:
 	floor_snap_length = 0.6
+	floor_max_angle = deg_to_rad(contact_slope_degrees)
 	add_to_group("isopods")
 	navigation_agent.path_desired_distance = 0.3
 	navigation_agent.target_desired_distance = 0.1
@@ -42,6 +51,17 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	time_without_food += delta
+	if starvation_seconds > 0.0 and time_without_food >= starvation_seconds:
+		remove_from_group("isopods")
+		var hud := get_parent().get_node_or_null("ColonyHUD")
+		if hud != null:
+			hud.show_notice("An isopod died from lack of food")
+		queue_free()
+		return
+	age_seconds += delta
+	breeding_cooldown = maxf(0.0, breeding_cooldown - delta)
+	feeding_reserve = maxf(0.0, feeding_reserve - feeding_reserve_decay * delta)
 	velocity.x = 0.0
 	velocity.z = 0.0
 	velocity.y = 0.0 if is_on_floor() else velocity.y - gravity * delta
@@ -81,7 +101,10 @@ func _physics_process(delta: float) -> void:
 			resume_exploring()
 		elif horizontal_distance_to(point) <= feeding_distance and absf(point.y - global_position.y) <= arrival_height_tolerance and is_on_floor():
 			is_eating = true
-			resource_target.consume(eating_rate * delta)
+			var eaten: float = resource_target.consume(eating_rate * delta)
+			feeding_reserve = minf(12.0, feeding_reserve + eaten)
+			if eaten > 0.0:
+				time_without_food = 0.0
 			if not is_instance_valid(resource_target) or resource_target.amount <= 0.0:
 				resume_exploring()
 		else:
@@ -156,6 +179,9 @@ func resume_exploring() -> void:
 
 func choose_wander_target() -> void:
 	var point := Vector3(randf_range(-wander_limit, wander_limit), global_position.y, randf_range(-wander_limit, wander_limit))
+	var world := get_tree().get_first_node_in_group("terrariums")
+	if world != null:
+		point = world.wander_point(global_position.y)
 	navigation_agent.target_position = NavigationServer3D.map_get_closest_point(navigation_agent.get_navigation_map(), point)
 
 
@@ -186,3 +212,9 @@ func horizontal_distance_to(point: Vector3) -> float:
 	var offset := point - global_position
 	offset.y = 0.0
 	return offset.length()
+
+
+func get_activity_label() -> String:
+	if is_eating:
+		return "Eating"
+	return "Seeking litter" if is_instance_valid(resource_target) else "Exploring"

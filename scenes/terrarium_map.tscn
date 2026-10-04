@@ -2,19 +2,27 @@
 
 [ext_resource type="Texture2D" uid="uid://de43spmlelpwn" path="res://assets/textures/farm_soil_4k.gltf~1/textures/farm_soil_diff_4k.jpg" id="1_yg817"]
 [ext_resource type="PackedScene" uid="uid://caaxbndqgm58j" path="res://assets/objects/namaqualand_boulder_03_4k.gltf/namaqualand_boulder_03_4k.gltf" id="2_3nhew"]
+[ext_resource type="Texture2D" uid="uid://dx6etj1g5yph1" path="res://assets/textures/farm_soil_4k.gltf~1/textures/farm_soil_nor_gl_4k.jpg" id="2_5n233"]
 [ext_resource type="PackedScene" uid="uid://7rnucwo0bvfb" path="res://assets/objects/bark_debris_01_4k.gltf/bark_debris_01_4k.gltf" id="3_koqoe"]
+[ext_resource type="Texture2D" uid="uid://bobbnunrsc715" path="res://assets/textures/grass_ground_4k.gltf/textures/grass_ground_diff_4k.jpg" id="3_ojks6"]
 [ext_resource type="Texture2D" uid="uid://xjrh4cyejv77" path="res://assets/objects/bark_debris_01_4k.gltf/textures/bark_debris_01_diff_4k.jpg" id="4_0tjg1"]
 [ext_resource type="Texture2D" uid="uid://dhq3car1ykguo" path="res://assets/objects/bark_debris_01_4k.gltf/textures/bark_debris_01_arm_4k.jpg" id="5_5n233"]
 [ext_resource type="Texture2D" uid="uid://jeolb4nhp5v5" path="res://assets/objects/bark_debris_01_4k.gltf/textures/bark_debris_01_nor_gl_4k.jpg" id="6_ojks6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d47wm"]
 albedo_texture = ExtResource("1_yg817")
-uv1_scale = Vector3(0.12, 0.12, 0.12)
+metallic_specular = 0.0
+normal_enabled = true
+normal_scale = 1.2
+normal_texture = ExtResource("2_5n233")
+bent_normal_enabled = true
+uv1_scale = Vector3(0.03, 0.03, 0.03)
 uv1_triplanar = true
+uv1_triplanar_sharpness = 2.2191331
 uv1_world_triplanar = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_48d6w"]
-albedo_texture = ExtResource("1_yg817")
+albedo_texture = ExtResource("3_ojks6")
 uv1_triplanar = true
 uv1_triplanar_sharpness = 0.30329984
 
@@ -63,6 +71,12 @@ _surfaces = [{
 }]
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_hs4jl")
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_7ksya"]
+height = 3.3607178
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7ksya"]
+size = Vector3(0.9410019, 1.6187973, 1.6971178)
 
 [node name="TerrariumMap" type="Node3D" unique_id=1623033496]
 
@@ -113,7 +127,7 @@ radial_segments = 16
 rings = 12
 
 [node name="DirtMound2" type="CSGSphere3D" parent="DirtBase" unique_id=327752236]
-transform = Transform3D(1.000001, 0, 0, 0, 0.20000024, 0, 0, 0, 1.2269088, -9.709708, -0.590343, -14.646458)
+transform = Transform3D(1.5712032, 0, 0, 0, 0.2000003, 0, 0, 0, 1.226909, -9.70971, -0.5903431, -14.075553)
 material_override = SubResource("StandardMaterial3D_48d6w")
 radius = 8.126492
 radial_segments = 32
@@ -143,5 +157,23 @@ transform = Transform3D(0.7847079, 0, 0.61986536, -0.029704193, 0.9988504, 0.037
 [node name="bark_debris_01_d2" type="MeshInstance3D" parent="bark_debris_01_4k" unique_id=995946044]
 transform = Transform3D(-0.43831575, -2.1826572, -0.9560491, -0.96841025, 1.3463413, -1.3653708, 1.5596915, 0.22255586, -1.1164339, 0.551064, -0.09885423, -0.12614805)
 mesh = SubResource("ArrayMesh_mhopd")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1183400252]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=188860612]
+transform = Transform3D(4.4519014, 2.283304, 3.3116608, -7.081232e-08, 4.9396954, -3.405791, -4.0225086, 2.527041, 3.6651728, 3.6674538, 9.282486, 15.936762)
+shape = SubResource("CylinderShape3D_7ksya")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D" unique_id=1838384204]
+transform = Transform3D(6, 0, 0, 0, 6, 0, 0, 0, 6, -10.653443, 1.2068782, 1.29387)
+shape = SubResource("BoxShape3D_7ksya")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="StaticBody3D" unique_id=2118302882]
+transform = Transform3D(5.419774, 0, -2.5741117, 0, 6, 0, 2.5741117, 0, 5.419774, -19.59587, 1.2068782, -2.3645034)
+shape = SubResource("BoxShape3D_7ksya")
+
+[node name="CollisionShape3D4" type="CollisionShape3D" parent="StaticBody3D" unique_id=935439521]
+transform = Transform3D(3.0970283, -5.1381335, 0.08948575, 5.136047, 3.091342, -0.25422966, 0.17160614, 0.20782664, 5.993945, 17.442574, 2.4968848, -10.898658)
+shape = SubResource("BoxShape3D_7ksya")
 
 [editable path="bark_debris_01_4k"]

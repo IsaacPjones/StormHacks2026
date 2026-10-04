@@ -12,6 +12,8 @@ signal resource_produced(drop: Node3D, production_index: int)
 @export_range(0.1, 20.0, 0.1) var drop_radius_min: float = 2.0
 @export_range(0.1, 20.0, 0.1) var drop_radius_max: float = 3.0
 @export_range(0.1, 10.0, 0.1) var drop_spacing: float = 0.65
+@export_range(0.0, 0.5, 0.001) var water_uptake_per_second: float = 0.006
+@export_range(0.0, 1.0, 0.01) var soil_cover: float = 0.07
 
 var time_left: Array[float] = []
 var active_drops: Array[Dictionary] = []
@@ -31,6 +33,11 @@ func reset_production_timers() -> void:
 func _physics_process(delta: float) -> void:
 	if not production_enabled:
 		return
+	var world := get_tree().get_first_node_in_group("terrariums")
+	if world != null and world.has_node("Ecosystem"):
+		if not world.map_ready:
+			return
+		delta *= float(world.get_node("Ecosystem").production_multiplier())
 	if time_left.size() != productions.size():
 		reset_production_timers()
 	for index in range(productions.size()):
@@ -82,6 +89,9 @@ func produce_resource(index: int) -> Node3D:
 		material.roughness = 0.8
 		mesh.material_override = material
 	drop.name = "%sDrop" % production.resource_kind.capitalize()
+	drop.set_meta("producer", weakref(self))
+	drop.set_meta("production_index", index)
+	drop.set_meta("production_profile", production)
 	# Drops live outside the plant, so replacing or deleting its model is safe.
 	var container: Node = get_tree().current_scene if get_tree().current_scene != null else get_parent()
 	container.add_child(drop)

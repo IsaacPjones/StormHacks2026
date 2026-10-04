@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="StormHacks2026"
-run/main_scene="uid://dcglmi4va6o4u"
+run/main_scene="res://scenes/start_menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+TerrariumSave="*res://scripts/save_store.gd"
 
 [display]
 

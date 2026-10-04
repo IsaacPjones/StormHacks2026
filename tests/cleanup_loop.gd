@@ -39,16 +39,21 @@ func run_check() -> void:
 	var placement: Node3D = world.get_node("FoodPlacement")
 	var camera: Camera3D = world.get_node("CameraRig/Camera3D")
 	var home: AntHome = world.get_node("NavigationRegion3D/Home")
+	var prefab: Node = load("res://scenes/ant.tscn").instantiate()
+	var configured_speed: float = prefab.move_speed
+	prefab.free()
 	for ant in ants:
-		expect(ant.get("move_speed") >= 2.52 and ant.get("move_speed") <= 3.08, "Ant base speed doubled with existing variation")
+		expect(ant.get("move_speed") >= configured_speed * 0.8 and ant.get("move_speed") <= configured_speed * 1.2, "Ant speed respects Inspector tuning and individual variation")
 		ant.set_physics_process(false)
 	isopod.set("detection_range", 30.0)
 	hud.get("pause_button").pressed.emit()
-	hud.get("add_food_button").pressed.emit()
+	placement.begin_placement(preload("res://scripts/placement_catalog.gd").items()[-1])
 	var click := InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
-	click.position = camera.unproject_position(Vector3(4, 0, 5))
+	var point: Vector3 = world.get_node("SpawnService").find_safe_point(Vector3(0, 0, 15), placement.selected_item, 6.0)
+	expect(point.is_finite(), "There is clear ground for the orange")
+	click.position = camera.unproject_position(point)
 	placement.call("_unhandled_input", click)
 	for frame in range(3):
 		await physics_frame
@@ -105,9 +110,11 @@ func run_check() -> void:
 	leaf.global_position = Vector3(6, 0, 3)
 	isopod.global_position = Vector3(6.85, isopod.global_position.y, 3)
 	isopod.set("resource_target", leaf)
+	isopod.time_without_food = 100.0
 	for frame in range(3):
 		await physics_frame
 	expect(isopod.get("is_eating"), "Isopod eats generic detritus locally")
+	expect(isopod.time_without_food < 0.1, "Actually eating detritus resets isopod starvation")
 	var amount_before: float = leaf.get("amount")
 	var position_before: Vector3 = isopod.global_position
 	hud.get("pause_button").pressed.emit()
@@ -119,16 +126,16 @@ func run_check() -> void:
 	for frame in range(60):
 		await process_frame
 	var normal_consumption: float = amount_before - float(leaf.get("amount"))
-	hud.get_node("Bar/Margin/Contents/Speed2").pressed.emit()
+	hud.set_speed(2)
 	amount_before = leaf.get("amount")
 	for frame in range(60):
 		await process_frame
 	var fast_consumption: float = amount_before - float(leaf.get("amount"))
 	expect(absf(normal_consumption - 0.8) < 0.1, "Inspector eating rate is per simulation second")
 	expect(absf(fast_consumption - normal_consumption * 4.0) < 0.2, "4x playback scales feeding consistently")
-	hud.get_node("Bar/Margin/Contents/Speed0").pressed.emit()
+	hud.set_speed(0)
 	hud.call("refresh_display")
-	expect(hud.get("total_food").text == "Food  %d" % home.stored_portions, "Detritus is excluded from ant-food HUD total")
+	expect(hud.get("stored_food").text == "Stored food: %d" % home.stored_portions, "HUD reports stored food only")
 	# Shared transactions clamp quantities, even before queued deletion occurs.
 	var race: Node3D = SCRAPS.instantiate()
 	race.set("amount", 1.0)

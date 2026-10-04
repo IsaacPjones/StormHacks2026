@@ -33,7 +33,9 @@ func run_check() -> void:
 	ant.food_detection_radius = 30.0
 	ant.hunger_time_left = 1000.0
 	isopod.detection_range = 30.0
-	var plant: Node3D = world.get_node("NectarPlant")
+	var plant: Node3D = load("res://scenes/nectar_plant.tscn").instantiate()
+	world.add_child(plant)
+	plant.global_position = Vector3(-5, 0, -4)
 	var nectar := Production.new()
 	nectar.amount_per_drop = 1.0
 	nectar.harvest_seconds = 0.1
